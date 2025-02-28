@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import styles from '../styles/style.module.css'; // Import the CSS module
 
+// Fix: Use type assertion on window to access SpeechRecognition properties
 const SpeechRecognition =
-  (typeof window !== 'undefined' &&
-    (window.SpeechRecognition || (window as any).webkitSpeechRecognition)) ||
-  null;
+  typeof window !== 'undefined'
+    ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+    : null;
 
 export default function Home() {
   const [originalText, setOriginalText] = useState('');
@@ -195,7 +196,7 @@ export default function Home() {
               {translatedText || "Translation will appear here."}
             </p>
 
-            {/* Warnings & Model */}
+            {/* Warnings & Model Info */}
             {translatedText && (
               <div className={styles.warnings}>
                 {warnings.length > 0 && (
@@ -216,7 +217,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Speak / Stop Speaking */}
+            {/* Speak / Stop Speaking Buttons */}
             {translatedText && (
               <div className={styles.btnGroup}>
                 <button onClick={playAudio} className={styles.speakBtn}>
