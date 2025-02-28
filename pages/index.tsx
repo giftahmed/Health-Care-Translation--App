@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import styles from '../styles/style.module.css'; // Import the CSS module
 
-// Fix: Use type assertion on window to access SpeechRecognition properties
+// Fix: Create a custom type alias for the SpeechRecognition event
+type MySpeechRecognitionEvent = Event & { results: SpeechRecognitionResultList };
+
+// Use type assertion on window to access SpeechRecognition properties
 const SpeechRecognition =
   typeof window !== 'undefined'
     ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
@@ -14,7 +17,6 @@ export default function Home() {
   const [modelUsed, setModelUsed] = useState<string>('');
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-
   const [sourceLang, setSourceLang] = useState('en-US');
   const [targetLang, setTargetLang] = useState('es');
 
@@ -27,7 +29,7 @@ export default function Home() {
       recognitionRef.current.interimResults = false;
       recognitionRef.current.lang = sourceLang;
 
-      recognitionRef.current.onresult = async (event: SpeechRecognitionEvent) => {
+      recognitionRef.current.onresult = async (event: MySpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setOriginalText(transcript);
         await handleTranslation(transcript);
