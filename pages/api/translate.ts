@@ -14,7 +14,7 @@ function sanitizeInput(text: string): string {
 }
 
 // Load glossaries from JSON files
-const MEDICAL_GLOSSARY: Record<string, Record<string, string>> = {
+const MEDICAL_GLOSSARY: Record<string, Record<string, string | string[]>> = {
   en: enGlossary,
   es: esGlossary
   // Add other languages as needed...
