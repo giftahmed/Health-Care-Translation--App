@@ -67,7 +67,7 @@ healthcare-translation-web-app/
 
 1. **Clone the Repository:**
    ```bash
-   git clone <your-repo-url>
+   git clone <https://github.com/giftahmed/Health-Care-Translation--App.git>
    cd healthcare-translation-web-app
    ```
 
