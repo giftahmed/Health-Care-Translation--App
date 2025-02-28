@@ -2,7 +2,6 @@ Below is a complete, single-file README.md that includes all the documentation, 
 
 ---
 
-```markdown
 # Healthcare Translation Web App with Generative AI
 
 ## Overview
@@ -34,7 +33,6 @@ This project is a web-based prototype that enables real-time, multilingual trans
 
 ## Project Structure
 
-```
 healthcare-translation-web-app/
 ├── data/                      # (Optional) Glossary JSON files (if not using public/assets)
 │   ├── en.json              
@@ -49,7 +47,7 @@ healthcare-translation-web-app/
 │   └── style.module.css     # Component-specific (local) styles
 ├── .env.local               # Environment variables (e.g., GROQ_API_KEY)
 └── README.md                # This documentation file
-```
+
 
 > **Note:** Glossary JSON files are stored in **public/assets/**. For example, **public/assets/en.json** contains:
 > ```json
@@ -67,7 +65,6 @@ healthcare-translation-web-app/
 >     "pulmonary embolism"
 >   ]
 > }
-> ```
 > and **public/assets/es.json** contains the corresponding Spanish translations.
 
 ## Setup & Local Development
@@ -191,11 +188,8 @@ This project is optimized for deployment on platforms like **Vercel**.
 This project demonstrates a robust yet rapid implementation of a healthcare translation web app using generative AI. It combines voice recognition, real-time translation, and audio playback within a secure, mobile-first design. For production, further enhancements in security and compliance are recommended.
 
 For further questions or assistance, please refer to this README or contact the project maintainer.
-```
-  - **Gift Ahmed
+
+ **Gift Ahmed**
 ## Live Demo
 Watch a walkthrough of the features and codebase:  
 **[Demo Video Link](https://youtu.be/ZQtDPmADQ0U)**
----
-
-This single README file includes everything you need: an overview, setup instructions, deployment details, code and security documentation, a user guide, and a presentation outline. Adjust any sections as needed to fit your project specifics.
