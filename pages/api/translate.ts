@@ -7,14 +7,21 @@ interface TranslateRequest {
   targetLang: string;
 }
 
+// A type for glossary entries used during pre- and post-processing
+interface GlossaryEntry {
+  placeholder: string;
+  term: string;
+}
+
 // Helper function to sanitize sensitive input
 function sanitizeInput(text: string): string {
   // Example: remove any "patient: <word>" patterns
   return text.replace(/(patient:\s*\w+)/gi, "patient: [redacted]");
 }
 
-// Load glossaries from JSON files
-const MEDICAL_GLOSSARY: Record<string, Record<string, string | string[]>> = {
+// Load glossaries from JSON files.
+// The JSON files contain an array under "medicalTerms"
+const MEDICAL_GLOSSARY: Record<string, { medicalTerms: string[] }> = {
   en: enGlossary,
   es: esGlossary
   // Add other languages as needed...
@@ -39,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const sanitizedText = sanitizeInput(text);
 
     // Pre-process the text using the English glossary
-    const { processedText, glossaryTerms } = preProcessText(sanitizedText, targetLang);
+    const { processedText, glossaryEntries } = preProcessText(sanitizedText);
 
     // Try primary translation model
     let result = await translateWithModel(processedText, targetLang, 'llama3-70b-8192');
@@ -50,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Post-process the translation to restore glossary terms in the target language
-    const finalTranslation = postProcessText(result.translatedText, glossaryTerms, targetLang);
+    const finalTranslation = postProcessText(result.translatedText, glossaryEntries, targetLang);
 
     // Validate the translation and produce warnings if necessary
     const warnings = validateTranslation(sanitizedText, finalTranslation, targetLang);
@@ -68,6 +75,87 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 // --- Helper Functions ---
 
+/**
+ * Pre-processes the text by replacing any occurrences of English medical terms with placeholders.
+ * Returns the processed text and an array of glossary entries for later restoration.
+ */
+function preProcessText(text: string) {
+  const glossaryEntries: GlossaryEntry[] = [];
+  let processedText = text;
+  const sourceTerms: string[] = MEDICAL_GLOSSARY['en'].medicalTerms || [];
+
+  sourceTerms.forEach(term => {
+    const regex = new RegExp(term, 'gi');
+    if (regex.test(processedText)) {
+      const placeholder = `GLOSSARY_${term.toUpperCase()}`;
+      processedText = processedText.replace(regex, placeholder);
+      glossaryEntries.push({ placeholder, term });
+    }
+  });
+
+  return { processedText, glossaryEntries };
+}
+
+/**
+ * Post-processes the translated text by replacing placeholders with the corresponding target language terms.
+ * It uses the order of terms in the source and target glossaries.
+ */
+function postProcessText(
+  text: string,
+  glossaryEntries: GlossaryEntry[],
+  targetLang: string
+) {
+  let processedText = text;
+  const targetTerms: string[] = MEDICAL_GLOSSARY[targetLang].medicalTerms || [];
+
+  glossaryEntries.forEach(({ placeholder, term }) => {
+    // Find the index of the term in the English glossary
+    const index = (MEDICAL_GLOSSARY['en'].medicalTerms || []).findIndex(
+      t => t.toLowerCase() === term.toLowerCase()
+    );
+    // Get the corresponding term from the target glossary if available; otherwise, fallback to the original term
+    const translatedTerm: string = (index !== -1 && targetTerms[index]) ?? term;
+    // Replace the placeholder with the translated term
+    processedText = processedText.replace(new RegExp(placeholder, 'gi'), translatedTerm);
+  });
+
+  return processedText;
+}
+
+/**
+ * Validates the translation by comparing dosage values, anatomical terms, and units between the source and translated text.
+ */
+function validateTranslation(source: string, translation: string, targetLang: string) {
+  const warnings: string[] = [];
+
+  // Validate dosages
+  const sourceDosages = source.match(DOSAGE_REGEX) || [];
+  const translatedDosages = translation.match(DOSAGE_REGEX) || [];
+  if (sourceDosages.join(',') !== translatedDosages.join(',')) {
+    warnings.push('Potential dosage discrepancy detected');
+  }
+
+  // Validate anatomical terms
+  ANATOMICAL_TERMS.forEach(term => {
+    if (source.toLowerCase().includes(term) && !translation.toLowerCase().includes(term)) {
+      warnings.push(`Anatomical term '${term}' might be mistranslated`);
+    }
+  });
+
+  // Validate units
+  const invalidUnits = (translation.match(/(mg|mL|g)/gi) || []).filter(unit => {
+    return !['mg', 'mL', 'g'].includes(unit.toLowerCase());
+  });
+  if (invalidUnits.length > 0) {
+    warnings.push(`Invalid units detected: ${invalidUnits.join(', ')}`);
+  }
+
+  return warnings;
+}
+
+/**
+ * Calls the external translation API (via the GROQ API) using the provided generative model.
+ */
 async function translateWithModel(text: string, targetLang: string, model: string) {
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -92,7 +180,6 @@ async function translateWithModel(text: string, targetLang: string, model: strin
         max_tokens: 1024
       })
     });
-
     const data = await response.json();
     return {
       translatedText: data.choices?.[0]?.message?.content?.trim() || '',
@@ -102,65 +189,4 @@ async function translateWithModel(text: string, targetLang: string, model: strin
     console.error(`Error with model ${model}:`, error);
     return { translatedText: '', modelUsed: model };
   }
-}
-
-function preProcessText(text: string, targetLang: string) {
-  const glossaryTerms: string[] = [];
-  let processedText = text;
-
-  // Use the English glossary for placeholders
-  const sourceGlossary = MEDICAL_GLOSSARY['en'] || {};
-
-  Object.entries(sourceGlossary).forEach(([term]) => {
-    if (processedText.toLowerCase().includes(term.toLowerCase())) {
-      const placeholder = `GLOSSARY_${term.toUpperCase()}`;
-      processedText = processedText.replace(new RegExp(term, 'gi'), placeholder);
-      glossaryTerms.push(placeholder);
-    }
-  });
-
-  return { processedText, glossaryTerms };
-}
-
-function postProcessText(text: string, glossaryTerms: string[], targetLang: string) {
-  let processedText = text;
-
-  // Replace placeholders with target language terms
-  glossaryTerms.forEach(placeholder => {
-    const term = placeholder.replace('GLOSSARY_', '').toLowerCase();
-    const translatedTerm = MEDICAL_GLOSSARY[targetLang]?.[term] || term;
-    processedText = processedText.replace(new RegExp(placeholder, 'gi'), translatedTerm);
-  });
-
-  return processedText;
-}
-
-function validateTranslation(source: string, translation: string, targetLang: string) {
-  const warnings: string[] = [];
-
-  // Validate dosages
-  const sourceDosages = source.match(DOSAGE_REGEX) || [];
-  const translatedDosages = translation.match(DOSAGE_REGEX) || [];
-  
-  if (sourceDosages.join(',') !== translatedDosages.join(',')) {
-    warnings.push('Potential dosage discrepancy detected');
-  }
-
-  // Validate anatomical terms
-  ANATOMICAL_TERMS.forEach(term => {
-    if (source.toLowerCase().includes(term) && 
-        !translation.toLowerCase().includes(MEDICAL_GLOSSARY[targetLang]?.[term] || term)) {
-      warnings.push(`Anatomical term '${term}' might be mistranslated`);
-    }
-  });
-
-  // Validate units
-  const invalidUnits = (translation.match(/(mg|mL|g)/gi) || [])
-    .filter(unit => !['mg', 'mL', 'g'].includes(unit.toLowerCase()));
-  
-  if (invalidUnits.length > 0) {
-    warnings.push(`Invalid units detected: ${invalidUnits.join(', ')}`);
-  }
-
-  return warnings;
 }
