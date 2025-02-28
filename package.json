@@ -1,0 +1,22 @@
+{
+    "name": "healthcare-translation-web-app",
+    "version": "1.0.0",
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start"
+    },
+    "dependencies": {
+        "next": "latest",
+        "react": "latest",
+        "react-dom": "latest"
+    },
+    "devDependencies": {
+        "@types/node": "22.13.5",
+        "@types/react": "19.0.10",
+        "autoprefixer": "^10.4.0",
+        "postcss": "^8.4.0",
+        "tailwindcss": "^3.0.0",
+        "typescript": "^4.5.0"
+    }
+}

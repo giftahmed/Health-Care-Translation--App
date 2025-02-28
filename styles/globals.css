@@ -1,0 +1,38 @@
+/* styles/globals.css */
+
+/* Global Theme Variables - Futuristic & Minimal */
+:root {
+  --bg1: #0d1117;             /* Deep, dark navy */
+  --bg2: #161b22;             /* Slightly lighter dark blue */
+  --bg3: #21262d;             /* Charcoal for elements */
+  --accent1: #58a6ff;         /* Vibrant blue accent */
+  --accent2: #1f6feb;         /* Deeper blue accent */
+  --primary: #7ee787;         /* Soft neon green */
+  --primary-hover: #56d364;   /* Brighter neon green */
+  --danger: #ff5252;          /* Bright red for errors */  
+  --success: #69f0ae;         /* Fresh green for success */  
+  --text-primary: #e6edf3;     /* Soft, off-white text */
+  --text-secondary: #8b949e;   /* Muted medium grey */
+  --text-tertiary: #757575;    /* Darker grey for less emphasis */
+  --focus-ring: rgba(88, 166, 255, 0.5);
+  --transition-duration: 200ms;
+  --glass-bg: rgba(22, 27, 34, 0.8); /* Semi-transparent background for glassmorphism */  
+  --glass-blur: blur(10px);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  background: linear-gradient(to bottom, var(--bg1), var(--bg2));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+  transition: background var(--transition-duration) ease-in-out;
+}
