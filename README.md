@@ -192,13 +192,10 @@ This project demonstrates a robust yet rapid implementation of a healthcare tran
 
 For further questions or assistance, please refer to this README or contact the project maintainer.
 ```
-- **Team Name:** [Giftivus]
-- **Team Members:**
-  - **[Gift Ahmed]:** Project Lead,Data Processing & API Integration Specialist
-
+  - **Gift Ahmed
 ## Live Demo
 Watch a walkthrough of the features and codebase:  
-**[Demo Video Link](https://youtu.be/UD8neANL5W8)**
+**[Demo Video Link](https://youtu.be/ZQtDPmADQ0U)**
 ---
 
 This single README file includes everything you need: an overview, setup instructions, deployment details, code and security documentation, a user guide, and a presentation outline. Adjust any sections as needed to fit your project specifics.
