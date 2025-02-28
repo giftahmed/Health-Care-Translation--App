@@ -47,9 +47,6 @@ healthcare-translation-web-app/
 │   └── style.module.css     # Component-specific (local) styles
 ├── .env.local               # Environment variables (e.g., GROQ_API_KEY)
 └── README.md                # This documentation file
-
-
-> **Note:** Glossary JSON files are stored in **public/assets/**. For example, **public/assets/en.json** contains:
 > ```json
 > {
 >   "medicalTerms": [
@@ -65,7 +62,6 @@ healthcare-translation-web-app/
 >     "pulmonary embolism"
 >   ]
 > }
-> and **public/assets/es.json** contains the corresponding Spanish translations.
 
 ## Setup & Local Development
 
